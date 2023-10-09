@@ -1,0 +1,97 @@
+/*Q1 top 5 countries*/
+WITH T1 AS
+(SELECT *, SUM(p.amount) OVER (PARTITION BY co.country) AS total
+FROM customer cu
+JOIN address a
+ON a.address_id= cu.address_id 
+JOIN city c
+ON c.city_id= a.city_id
+JOIN country co
+ON co.country_id= c.country_id
+JOIN payment p
+ON p.customer_id= cu.customer_id
+JOIN rental r
+ON r.rental_id= p.rental_id
+)/* table for total payment per country */
+
+SELECT country ,total FROM T1
+ 
+GROUP BY t1.total, t1.country
+ORDER BY total DESC
+
+
+/*Q2 top 5 categories for Americans*/
+WITH T1 AS
+(SELECT *, ca.name AS category, SUM(p.amount) OVER (PARTITION BY ca.name) AS total
+FROM customer cu
+JOIN address a
+ON a.address_id = cu.address_id 
+JOIN city c
+ON c.city_id= a.city_id
+JOIN country co
+ON co.country_id= c.country_id
+JOIN payment p
+ON p.customer_id= cu.customer_id
+JOIN rental r
+ON r.rental_id= p.rental_id
+ JOIN inventory i
+ ON i.inventory_id= r.inventory_id
+ JOIN film_category fc
+ ON fc.film_id = i.film_id
+ JOIN category ca
+ ON ca.category_id= fc.category_id
+)/* table for total payment per category */
+
+SELECT Category, country, total, DENSE_RANK() OVER (ORDER BY total DESC) AS rank FROM T1
+
+WHERE country= 'United States' 
+GROUP BY T1.category, T1.total, T1.country
+ORDER BY rank
+ 
+
+/*Q3 top 5 American cities*/
+WITH T1 AS
+(SELECT *, ROW_NUMBER() OVER (PARTITION BY c.city)AS R, SUM(p.amount) OVER (PARTITION BY c.city) AS total
+FROM customer cu
+JOIN address a
+ON a.address_id = cu.address_id 
+JOIN city c
+ON c.city_id= a.city_id
+JOIN country co
+ON co.country_id= c.country_id
+JOIN payment p
+ON p.customer_id= cu.customer_id
+)/* table for total payment per city*/
+
+SELECT city, total, DENSE_RANK() OVER (ORDER BY total DESC) AS rank FROM T1
+
+WHERE country= 'United States' and R=1
+GROUP BY T1.city, T1.total, T1.country
+ORDER BY rank
+
+
+
+
+
+/*Q4 top 5 American costumers */
+WITH T1 AS
+(SELECT *, ROW_NUMBER() OVER (PARTITION BY cu.first_name ||' '|| cu.last_name)AS R, cu.first_name ||' '|| cu.last_name as full_name, SUM(p.amount) OVER (PARTITION BY cu.first_name ||' '|| cu.last_name) AS total
+FROM  customer cu
+JOIN address a
+ON a.address_id = cu.address_id 
+JOIN city c
+ON c.city_id= a.city_id
+JOIN country co
+ON co.country_id= c.country_id
+JOIN payment p
+ON p.customer_id= cu.customer_id
+JOIN rental r
+ON r.rental_id= p.rental_id
+ JOIN inventory i
+ ON i.inventory_id= r.inventory_id
+)/* table for total  payment per costumer*/
+
+SELECT full_name, country, total, DENSE_RANK() OVER (ORDER BY total DESC) AS rank FROM T1
+
+WHERE country= 'United States' and R=1
+GROUP BY T1.full_name, T1.total, T1.country
