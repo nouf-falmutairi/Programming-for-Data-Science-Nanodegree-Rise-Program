@@ -1,20 +1,20 @@
-Date created
+### Date created
 Jan.10.2023
 
-Project Title
+### Project Title
 bikeshare.py
 
-Description
+### Description
 scan and get statistic information about bikes in different cities
 
-Files used
+### Files used
 bikeshare.py along with three .csv files that were hidden from user
 
-Credits
+### Credits
 my own python code
 
-language used
+### language used
 python
 
-library used
+### library used
 pandas and numpy
